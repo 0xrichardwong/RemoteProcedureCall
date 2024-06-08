@@ -1,70 +1,70 @@
-# sysモジュールは、Pythonが実行されているシステムに関連する情報を取得したり、
-# システム特有の操作を行ったりするためのPythonの組み込みモジュールです。
+# The sys module is a built-in Python module that provides access to some variables
+# used or maintained by the interpreter and to functions that interact strongly with the interpreter.
 import socket
 import sys
 import random
 import json
 
 method = "validAnagram"
-params = ['abc','cba']
+params = ['abc', 'cba']
 
 message = {
     "method": method,
     "params": params,
-    "id":"1"
+    "id": "1"
 }
 json_message = json.dumps(message)
 bytes_message = json_message.encode('utf-8')
 
 def main():
-    # TCP/IPソケットを作成します。
-    # ここでソケットとは、通信を可能にするためのエンドポイントです。
+    # Create a TCP/IP socket.
+    # A socket is an endpoint for sending or receiving data across a computer network.
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
-    # サーバが待ち受けている特定の場所にソケットを接続します。
+    # Connect the socket to the address where the server is listening.
     server_address = '/tmp/socket_file'
-    print('connecting to {}'.format(server_address))
+    print('Connecting to {}'.format(server_address))
 
-    # サーバに接続を試みます。
-    # 何か問題があった場合、エラーメッセージを表示してプログラムを終了します。
+    # Attempt to connect to the server.
+    # If there is an issue, print an error message and exit the program.
     try:
         sock.connect(server_address)
     except socket.error as err:
         print(err)
-        # sys.exit()を使うと、Pythonプログラムをすぐに終了することができます。
-        # ここでの引数1は、プログラムがエラーで終了したことを示すステータスコードです。
+        # sys.exit() can be used to exit the Python program immediately.
+        # The argument 1 indicates that the program exited with an error.
         sys.exit(1)
 
-    # サーバに接続できたら、サーバにメッセージを送信します。
+    # Once connected to the server, send the message.
     try:
-        # 送信するメッセージを定義します。
-        # ソケット通信ではデータをバイト形式で送る必要があります。
+        # Define the message to send.
+        # Data must be sent in byte format for socket communication.
         sock.sendall(bytes_message)
 
-        # サーバからの応答を待つ時間を2秒間に設定します。
-        # この時間が過ぎても応答がない場合、プログラムは次のステップに進みます。
+        # Set a timeout of 2 seconds for the response from the server.
+        # If no response is received within this time, the program proceeds to the next step.
         sock.settimeout(2)
 
-        # サーバからの応答を待ち、応答があればそれを表示します。
+        # Wait for a response from the server and display it if received.
         try:
             while True:
-                # サーバからのデータを受け取ります。
-                # 受け取るデータの最大量は256バイトとします。
+                # Receive data from the server.
+                # The maximum amount of data to be received at once is 256 bytes.
                 data = str(sock.recv(256))
 
-                # データがあればそれを表示し、なければループを終了します。
+                # If data is received, display it; otherwise, break the loop.
                 if data:
                     print('Server response: ' + data)
                 else:
                     break
 
-        # 2秒間サーバからの応答がなければ、タイムアウトエラーとなり、エラーメッセージを表示します。
+        # If no response is received within 2 seconds, a timeout error occurs, and an error message is displayed.
         except(TimeoutError):
             print('Socket timeout, ending listening for server messages')
 
-    # すべての操作が完了したら、最後にソケットを閉じて通信を終了します。
+    # After all operations are complete, close the socket to end the communication.
     finally:
-        print('closing socket')
+        print('Closing socket')
         sock.close()
 
 main()
